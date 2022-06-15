@@ -47,6 +47,7 @@ I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
 DMA_HandleTypeDef hdma_i2c1_rx;
+DMA_HandleTypeDef hdma_i2c3_rx;
 
 I2S_HandleTypeDef hi2s2;
 
@@ -202,9 +203,9 @@ int main(void)
 	  imu_init(&hspi3);
 #endif
   }else if(sp.imu_select == SELECT_ICM_42688_I2C){
-	  imu_init_i2c(&hi2c1);
+	  //imu_init_i2c(&hi2c1);
 	  //imu_init_i2c(&hi2c2);
-	  //imu_init_i2c(&hi2c3);
+	  imu_init_i2c(&hi2c3);
   }
   ps_init(&hi2c1);
   memset(sp.txbuff, 0, sizeof(sp.txbuff));
@@ -219,6 +220,9 @@ int main(void)
 	  sp.acc_print[i] = 0;
 	  sp.gyro_print[i] = 0;
   }
+
+  //imu_update_i2c_DMA_gyro(&hi2c1);
+  imu_update_i2c_DMA_gyro(&hi2c3);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -795,6 +799,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
 }
 
@@ -1010,12 +1017,14 @@ void StartIMUTask(void const * argument)
 		  freqCount = htim2.Instance->CNT;
 		  sp.imu_elapsed_time = getTimeUs(freqCount) - start_time_us;
 #else
+		  /*
 		  sp.imu_count_frame = getUs() - sp.imu_prev_frame;
 		  if(sp.imu_dma_en == 0 || sp.imu_count_frame > 100000){
 			  sp.imu_prev_frame = getUs();
 			  imu_update_i2c_DMA_gyro(&hi2c1);
 			  sp.imu_dma_en = 1;
 		  }
+		  */
 #endif
 	  }
 #endif
